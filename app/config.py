@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     user_height_cm: float = 170.0
     goal_weight_kg: float = 80.0
 
-    database_url: str
+    database_url: str = "sqlite:///./storage/data.sqlite"
 
     upload_dir: Path = Path("storage/uploads")
     max_upload_mb: int = 10
