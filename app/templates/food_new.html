@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <div class="h5 mb-2">记录饮食（餐前快照）</div>
+
+      {% if fasting_warning %}
+        <div class="alert alert-warning">
+          <div class="fw-semibold">警告：禁食窗口未满 16 小时</div>
+          <div>你的胰岛素可能仍在高位，确定要打断脂肪燃烧吗？</div>
+          {% if fasting_hours is not none %}<div class="small mt-1">当前仅 {{ "%.1f"|format(fasting_hours) }} 小时</div>{% endif %}
+        </div>
+      {% endif %}
+
+      {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="/food/new" enctype="multipart/form-data" class="row g-3" id="foodForm">
+        <div class="col-12">
+          <label class="form-label">时间</label>
+          <input class="form-control" type="datetime-local" name="eaten_at" id="eatenAt" value="{{ now_iso }}" required>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">类型</label>
+          {% set mt = selected_meal_type or "dinner" %}
+          <select class="form-select" name="meal_type" id="mealType" required>
+            <option value="breakfast" {% if mt == "breakfast" %}selected{% endif %}>早餐</option>
+            <option value="lunch" {% if mt == "lunch" %}selected{% endif %}>午餐</option>
+            <option value="dinner" {% if mt == "dinner" %}selected{% endif %}>晚餐</option>
+            <option value="snack" {% if mt == "snack" %}selected{% endif %}>加餐</option>
+          </select>
+          <div class="form-text">自动规则：05:00-11:00 早餐；11:00-16:00 午餐；其它默认晚餐（可手动改）。</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">食物照片</label>
+          <input class="form-control" type="file" name="photo" accept="image/*">
+        </div>
+
+        <div class="col-12">
+          <div class="fw-semibold mb-2">灵魂拷问</div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="refined_carbs" value="true" id="refined">
+            <label class="form-check-label" for="refined">是否包含精制碳水（米/面/糖）</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="sugar" value="true" id="sugar">
+            <label class="form-check-label" for="sugar">是否包含糖（饮料/甜品）</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="veggies_first" value="true" id="veg">
+            <label class="form-check-label" for="veg">蔬菜是否先吃</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="protein_enough" value="true" id="protein">
+            <label class="form-check-label" for="protein">蛋白质够不够</label>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">自我评级</label>
+          <select class="form-select" name="self_rating" required>
+            <option value="safe">安全（绿）</option>
+            <option value="risk">风险（黄）</option>
+            <option value="danger">危险（红）</option>
+          </select>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">进食结束时间（用于16h倒计时）</label>
+          <input class="form-control" type="datetime-local" name="meal_end_at" value="{{ now_iso }}">
+        </div>
+
+        {% if fasting_warning %}
+          <div class="col-12">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="override_fasting_warning" value="true" id="override">
+              <label class="form-check-label" for="override">仍要记录本次进食（我已知晓风险）</label>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="col-12">
+          <label class="form-label">备注</label>
+          <textarea class="form-control" name="notes" rows="2"></textarea>
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary w-100" type="submit">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    const eatenAt = document.getElementById('eatenAt');
+    const mealType = document.getElementById('mealType');
+    let mealTypeTouched = false;
+
+    mealType.addEventListener('change', () => { mealTypeTouched = true; });
+
+    function suggestMealType(value) {
+      if (!value) return 'dinner';
+      const parts = value.split('T');
+      if (parts.length !== 2) return 'dinner';
+      const hm = parts[1].split(':');
+      if (hm.length < 2) return 'dinner';
+      const h = parseInt(hm[0], 10);
+      const m = parseInt(hm[1], 10);
+      if (Number.isNaN(h) || Number.isNaN(m)) return 'dinner';
+      const minutes = h * 60 + m;
+      if (minutes >= 5 * 60 && minutes < 11 * 60) return 'breakfast';
+      if (minutes >= 11 * 60 && minutes < 16 * 60) return 'lunch';
+      return 'dinner';
+    }
+
+    eatenAt.addEventListener('change', () => {
+      if (mealTypeTouched) return;
+      const suggested = suggestMealType(eatenAt.value);
+      mealType.value = suggested;
+    });
+
+    const fastingWarning = {{ 'true' if fasting_warning else 'false' }};
+    if (fastingWarning) {
+      document.getElementById('foodForm').addEventListener('submit', (e) => {
+        const override = document.getElementById('override');
+        if (override && !override.checked) {
+          const ok = confirm('未达到16小时禁食窗口：确定要继续记录本次进食吗？');
+          if (!ok) e.preventDefault();
+        }
+      });
+    }
+  </script>
+{% endblock %}
+

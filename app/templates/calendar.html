@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row align-items-center mb-4">
+  <div class="col">
+    <h2 class="mb-0" style="font-weight: 700;">{{ year }}年{{ month }}月</h2>
+    <p class="text-secondary mb-0 small">健康概览</p>
+  </div>
+  <div class="col-auto">
+    <div class="btn-group">
+      <a class="btn btn-sm btn-outline-secondary"
+        href="/calendar?year={{ prev_year }}&month={{ prev_month }}">&larr;</a>
+      <a class="btn btn-sm btn-outline-secondary"
+        href="/calendar?year={{ next_year }}&month={{ next_month }}">&rarr;</a>
+    </div>
+  </div>
+</div>
+
+<div class="calendar-grid">
+  <!-- Headers -->
+  <div class="calendar-header">一</div>
+  <div class="calendar-header">二</div>
+  <div class="calendar-header">三</div>
+  <div class="calendar-header">四</div>
+  <div class="calendar-header">五</div>
+  <div class="calendar-header">六</div>
+  <div class="calendar-header">日</div>
+
+  <!-- Days -->
+  {% for week in weeks %}
+  {% for d in week %}
+  {% if d.in_month %}
+  {% set color = day_to_summary.get(d.day) %}
+  <div class="calendar-day {% if color %}bg-{{ color }}-subtle{% endif %}">
+    <div class="day-number {% if color %}text-{{ color }}-emphasis{% endif %}">{{ d.day.day }}</div>
+  </div>
+  {% else %}
+  <div class="calendar-day empty-day" style="opacity: 0.3;">
+    <div class="day-number text-muted">{{ d.day.day }}</div>
+  </div>
+  {% endif %}
+  {% endfor %}
+  {% endfor %}
+</div>
+
+<div class="mt-4 text-center">
+  <small class="text-secondary" style="font-size: 0.8rem;">
+    • 绿色：状态极佳 &nbsp;&nbsp;
+    • 黄色：一般 &nbsp;&nbsp;
+    • 红色：需注意
+  </small>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 - Project 80</title>
+  <link href="/static/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/app.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container" style="max-width: 420px;">
+    <div class="card mt-5">
+      <div class="card-body">
+        <div class="h4 mb-1">Project 80</div>
+        <div class="text-muted mb-3">请登录以继续</div>
+
+        {% if error %}
+          <div class="alert alert-danger" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="/login">
+          <div class="mb-3">
+            <label for="username" class="form-label">用户名</label>
+            <input type="text" class="form-control" id="username" name="username" required autofocus>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">密码</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">登录</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

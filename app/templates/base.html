@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or "Project 80" }}</title>
+
+  <link href="/static/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/app.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg sticky-top bg-dark navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/dashboard">Project 80</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="/dashboard">仪表盘</a></li>
+          <li class="nav-item"><a class="nav-link" href="/metrics">每日指标</a></li>
+          <li class="nav-item"><a class="nav-link" href="/food/new">记录饮食</a></li>
+          <li class="nav-item"><a class="nav-link" href="/calendar">月历</a></li>
+          <li class="nav-item"><a class="nav-link" href="/medical">医疗</a></li>
+          <li class="nav-item"><a class="nav-link" href="/report/weekly">周报</a></li>
+        </ul>
+        <div class="d-flex">
+          <a href="/logout" class="btn btn-outline-light btn-sm">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-4">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="/static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
+

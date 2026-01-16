@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="h5 mb-0">每日指标（管理）</div>
+        <a class="btn btn-sm btn-primary" href="/metrics/new">新增/修改</a>
+      </div>
+      <hr>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>体重</th>
+              <th>空腹血糖</th>
+              <th>腰围</th>
+              <th class="text-end">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in metrics %}
+              <tr>
+                <td>{{ m.day.isoformat() }}</td>
+                <td>{% if m.weight_kg is not none %}{{ m.weight_kg }}{% endif %}</td>
+                <td>{% if m.fasting_glucose_mmol_l is not none %}{{ m.fasting_glucose_mmol_l }}{% endif %}</td>
+                <td>{% if m.waist_cm is not none %}{{ m.waist_cm }}{% endif %}</td>
+                <td class="text-end">
+                  <a class="btn btn-sm btn-outline-secondary" href="/metrics/new?day={{ m.day.isoformat() }}">编辑</a>
+                  <form method="post" action="/metrics/delete" class="d-inline" onsubmit="return confirm('确定要删除 {{ m.day.isoformat() }} 的指标吗？');">
+                    <input type="hidden" name="day" value="{{ m.day.isoformat() }}">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">删除</button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="5" class="text-muted">暂无数据</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

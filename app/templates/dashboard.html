@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-4">
+  <!-- Status Card (Optimized Layout) -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <h5 class="text-secondary small text-uppercase mb-1" style="letter-spacing: 1px;">今日状态</h5>
+          <h2 class="mb-0" style="font-weight: 700;">
+            {% if metrics_today and metrics_today.weight_kg is not none %}
+            {{ metrics_today.weight_kg }} <span class="text-secondary"
+              style="font-size: 0.6em; font-weight: 400;">kg</span>
+            {% else %}
+            <span class="text-secondary" style="font-size: 0.6em; font-weight: 400;">待录入体重</span>
+            {% endif %}
+          </h2>
+        </div>
+        <div class="text-end">
+          <div class="badge rounded-pill 
+                {% if summary_yesterday.color.value == 'green' %}bg-success-subtle text-success
+                {% elif summary_yesterday.color.value == 'yellow' %}bg-warning-subtle text-warning-emphasis
+                {% else %}bg-danger-subtle text-danger{% endif %} 
+                px-3 py-2" style="font-weight: 600; font-size: 0.8em;">
+            昨日: {{ summary_yesterday.color.value|upper }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Health Metrics Grid -->
+      <div class="row g-3 mb-4">
+        <div class="col-6">
+          <div class="p-3 bg-light rounded-4">
+            <div class="text-secondary small mb-1">空腹血糖</div>
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">
+              {% if metrics_today and metrics_today.fasting_glucose_mmol_l is not none %}
+              {{ metrics_today.fasting_glucose_mmol_l }}
+              <span class="text-secondary" style="font-size: 0.7em;">mmol/L</span>
+              {% else %}
+              <span class="text-muted" style="font-size: 0.8em; font-weight: 400;">--</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-3 bg-light rounded-4">
+            <div class="text-secondary small mb-1">BMI 指数</div>
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">
+              {% if bmi %}
+              {{ "%.1f"|format(bmi) }}
+              {% else %}
+              <span class="text-muted" style="font-size: 0.8em; font-weight: 400;">--</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="p-3 bg-light rounded-4 d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-secondary small">距离目标 ({{ "%.0f"|format(settings.goal_weight_kg) }}kg)</div>
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 600;">
+              {% if goal_delta is not none %}
+              {{ "%.1f"|format(goal_delta) }} <span class="text-secondary small">kg</span>
+              {% else %}
+              <span class="text-muted small">--</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-secondary-subtle my-2">
+
+      <div class="mt-3">
+        <div class="text-secondary small mb-2">昨日分析</div>
+        <div class="p-3 bg-light rounded-3 small text-secondary"
+          style="background-color: #f9f9fa !important; border: 1px solid #eee;">
+          {% if summary_yesterday.reasons %}
+          {{ summary_yesterday.reasons }}
+          {% else %}
+          无记录
+          {% endif %}
+        </div>
+        <div class="mt-2 text-primary small" style="font-weight: 500;">
+          {{ summary_yesterday.commentary }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fasting & Achievements -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100 d-flex flex-column">
+      <div class="mb-4">
+        <h5 class="text-secondary small text-uppercase mb-3" style="letter-spacing: 1px;">禁食计时器 (16H)</h5>
+        {% if fasting_hours is none %}
+        <div class="text-center py-4 bg-light rounded-4 text-muted">
+          需要设置“上一餐结束时间”
+        </div>
+        {% else %}
+        <div class="d-flex align-items-center mb-3">
+          <div style="flex: 1;">
+            <div class="progress" style="height: 12px; border-radius: 6px;">
+              {% set progress = (fasting_hours / 16.0) * 100 %}
+              <div class="progress-bar {% if progress >= 100 %}bg-success{% else %}bg-primary{% endif %}"
+                role="progressbar" style="width: {{ progress if progress < 100 else 100 }}%">
+              </div>
+            </div>
+          </div>
+          <div class="ms-3 text-end" style="min-width: 80px;">
+            <div style="font-weight: 700; font-size: 1.2rem;">{{ "%.1f"|format(fasting_hours) }}<span
+                class="small">h</span></div>
+          </div>
+        </div>
+
+        {% if fasting_remaining and fasting_remaining > 0 %}
+        <div class="text-secondary small">还需 <span class="text-primary fw-bold">{{ "%.1f"|format(fasting_remaining)
+            }}</span> 小时达标</div>
+        {% else %}
+        <div class="text-success small fw-bold">✓ 已达成 16 小时目标</div>
+        {% endif %}
+        {% endif %}
+      </div>
+
+      <div class="mt-auto">
+        <h5 class="text-secondary small text-uppercase mb-3" style="letter-spacing: 1px;">成就系统</h5>
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="p-3 border rounded-4 text-center">
+              <div class="text-success h4 mb-0">{{ green_total }}</div>
+              <div class="text-secondary small" style="font-size: 0.75rem;">累计绿灯</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 border rounded-4 text-center">
+              <div class="text-primary h4 mb-0">
+                {% if weight_milestone %}{{ weight_milestone }}{% else %}0{% endif %}
+              </div>
+              <div class="text-secondary small" style="font-size: 0.75rem;">减重里程碑(kg)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="col-12">
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="text-secondary small text-uppercase mb-0" style="letter-spacing: 1px;">趋势追踪</h5>
+      </div>
+      <div id="trendChart" style="height: 320px; width: 100%;"></div>
+    </div>
+  </div>
+
+  {% if warning_image %}
+  <!-- ... (Keep warning logic if needed, simplify style) ... -->
+  <div class="col-12">
+    <div class="card border-danger">
+      <div class="card-body text-danger">
+        <h5 class="card-title">红灯警示</h5>
+        <p>昨日行为已导致胰腺负担加重。</p>
+        <img src="/static/{{ warning_image }}" class="img-fluid rounded" alt="red warning">
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/lib/echarts/echarts.min.js"></script>
+<script>
+  const days = {{ chart_days_json| safe }};
+  const weight = {{ chart_weight_json| safe }};
+  const glucose = {{ chart_glucose_json| safe }};
+
+  const el = document.getElementById('trendChart');
+  const chart = echarts.init(el);
+
+  // Apple-like Chart Style
+  chart.setOption({
+    grid: { left: '2%', right: '4%', bottom: '15%', containLabel: true, top: '12%' },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      borderRadius: 12,
+      padding: 12,
+      textStyle: { color: '#1d1d1f' },
+      extraCssText: 'box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none;'
+    },
+    legend: { bottom: 0, left: 'center', textStyle: { color: '#86868b' }, itemGap: 20 },
+    xAxis: {
+      type: 'category',
+      data: days,
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: {
+        color: '#86868b',
+        fontSize: 11,
+        interval: 'auto',
+        hideOverlap: true
+      }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '体重',
+        position: 'left',
+        splitLine: { lineStyle: { type: 'dashed', color: '#e5e5ea' } },
+        axisLabel: { color: '#86868b', fontSize: 11 }
+      },
+      {
+        type: 'value',
+        name: '血糖',
+        min: 3,
+        max: 12,
+        position: 'right',
+        splitLine: { show: false },
+        axisLabel: { color: '#86868b', fontSize: 11 }
+      }
+    ],
+    series: [
+      {
+        name: '体重(kg)',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 8,
+        itemStyle: { color: '#0071e3' },
+        lineStyle: { width: 3, shadowColor: 'rgba(0,113,227,0.3)', shadowBlur: 10 },
+        data: weight,
+        yAxisIndex: 0,
+        connectNulls: true
+      },
+      {
+        name: '空腹血糖(mmol/L)',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 8,
+        itemStyle: { color: '#34c759' }, // Apple Green
+        lineStyle: { width: 3 },
+        data: glucose,
+        yAxisIndex: 1,
+        connectNulls: true
+      }
+    ]
+  });
+  window.addEventListener('resize', () => chart.resize());
+</script>
+{% endblock %}

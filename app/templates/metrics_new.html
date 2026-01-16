@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="h5 mb-0">录入 / 修改每日指标</div>
+        <a class="btn btn-sm btn-outline-secondary" href="/metrics">管理列表</a>
+      </div>
+      <hr>
+
+      <form method="post" action="/metrics/new" class="row g-3" id="metricsForm">
+        <div class="col-12">
+          <label class="form-label">日期</label>
+          <input class="form-control" type="date" name="day" id="dayInput" value="{{ day }}" required>
+          <div class="form-text">选日期后会自动加载该日已录入的数据。</div>
+        </div>
+
+        <div class="col-6">
+          <label class="form-label">体重（kg）</label>
+          <input class="form-control" type="number" step="0.1" name="weight_kg" value="{{ metric.weight_kg if metric and metric.weight_kg is not none else '' }}">
+        </div>
+        <div class="col-6">
+          <label class="form-label">空腹血糖（mmol/L）</label>
+          <input class="form-control" type="number" step="0.1" name="fasting_glucose_mmol_l" value="{{ metric.fasting_glucose_mmol_l if metric and metric.fasting_glucose_mmol_l is not none else '' }}">
+        </div>
+        <div class="col-6">
+          <label class="form-label">餐后2h血糖（mmol/L）</label>
+          <input class="form-control" type="number" step="0.1" name="post2h_glucose_mmol_l" value="{{ metric.post2h_glucose_mmol_l if metric and metric.post2h_glucose_mmol_l is not none else '' }}">
+        </div>
+        <div class="col-6">
+          <label class="form-label">腰围（cm）</label>
+          <input class="form-control" type="number" step="0.1" name="waist_cm" value="{{ metric.waist_cm if metric and metric.waist_cm is not none else '' }}">
+        </div>
+        <div class="col-6">
+          <label class="form-label">睡眠时长（小时）</label>
+          <input class="form-control" type="number" step="0.1" name="sleep_hours" value="{{ metric.sleep_hours if metric and metric.sleep_hours is not none else '' }}">
+        </div>
+        <div class="col-3">
+          <label class="form-label">收缩压</label>
+          <input class="form-control" type="number" name="bp_systolic" value="{{ metric.bp_systolic if metric and metric.bp_systolic is not none else '' }}">
+        </div>
+        <div class="col-3">
+          <label class="form-label">舒张压</label>
+          <input class="form-control" type="number" name="bp_diastolic" value="{{ metric.bp_diastolic if metric and metric.bp_diastolic is not none else '' }}">
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary w-100" type="submit">保存</button>
+        </div>
+      </form>
+
+      {% if metric %}
+        <form method="post" action="/metrics/delete" class="mt-2" onsubmit="return confirm('确定要删除 {{ day }} 的指标吗？');">
+          <input type="hidden" name="day" value="{{ day }}">
+          <button class="btn btn-outline-danger w-100" type="submit">删除这一天的数据</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    document.getElementById('dayInput').addEventListener('change', (e) => {
+      const day = e.target.value;
+      if (day) window.location.href = `/metrics/new?day=${encodeURIComponent(day)}`;
+    });
+  </script>
+{% endblock %}
+

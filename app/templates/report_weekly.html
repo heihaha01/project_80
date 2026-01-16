@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="h5 mb-0">周报：{{ start_day.isoformat() }} ~ {{ end_day.isoformat() }}</div>
+        <a class="btn btn-sm btn-outline-secondary" href="/dashboard">返回</a>
+      </div>
+      <hr>
+      <div class="row g-2">
+        <div class="col-4"><div class="p-2 bg-success text-white rounded">绿灯 {{ green }}</div></div>
+        <div class="col-4"><div class="p-2 bg-warning rounded">黄灯 {{ yellow }}</div></div>
+        <div class="col-4"><div class="p-2 bg-danger text-white rounded">红灯 {{ red }}</div></div>
+      </div>
+      <div class="mt-3">
+        <div>体重变化：{% if weight_change is not none %}{{ "%.1f"|format(weight_change) }} kg{% else %}—{% endif %}</div>
+        <div>空腹血糖均值：{% if fasting_avg is not none %}{{ "%.2f"|format(fasting_avg) }} mmol/L{% else %}—{% endif %}</div>
+      </div>
+      <hr>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>灯</th>
+              <th>体重</th>
+              <th>空腹血糖</th>
+              <th>评语</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in summaries %}
+              <tr>
+                <td>{{ s.day.isoformat() }}</td>
+                <td><span class="color-dot dot-{{ s.color.value }}"></span></td>
+                <td>{% if metrics.get(s.day) and metrics.get(s.day).weight_kg is not none %}{{ metrics.get(s.day).weight_kg }}{% endif %}</td>
+                <td>{% if metrics.get(s.day) and metrics.get(s.day).fasting_glucose_mmol_l is not none %}{{ metrics.get(s.day).fasting_glucose_mmol_l }}{% endif %}</td>
+                <td class="small text-muted">{{ s.commentary }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

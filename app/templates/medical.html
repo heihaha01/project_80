@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="h6">用药打卡</div>
+        <form method="post" action="/medical/medication" class="row g-2">
+          <div class="col-12">
+            <input class="form-control" name="name" placeholder="药物名（如 司美格鲁肽/二甲双胍）" required>
+          </div>
+          <div class="col-12">
+            <input class="form-control" name="dose" placeholder="剂量（可选）">
+          </div>
+          <div class="col-12">
+            <label class="form-label small">用药时间</label>
+            <input class="form-control" type="datetime-local" name="taken_at" value="{{ now_iso }}" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label small">下次提醒（可选）</label>
+            <input class="form-control" type="text" name="next_reminder_at" placeholder="点击选择时间"
+              onfocus="(this.type='datetime-local')" onblur="if(!this.value){this.type='text'}">
+          </div>
+          <div class="col-12">
+            <button class="btn btn-primary w-100">保存</button>
+          </div>
+        </form>
+        <hr>
+        <div class="small text-muted mb-2">最近记录</div>
+        <div class="list-group">
+          {% for m in meds %}
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between">
+              <div>{{ m.name }} {% if m.dose %}<span class="text-muted">({{ m.dose }})</span>{% endif %}</div>
+              <div class="text-muted small">{{ m.taken_at.strftime("%Y-%m-%d %H:%M") }}</div>
+            </div>
+          </div>
+          {% else %}
+          <div class="list-group-item text-muted">暂无</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="h6">库存管理</div>
+        <form method="post" action="/medical/inventory" class="row g-2">
+          <div class="col-7">
+            <input class="form-control" name="name" placeholder="药物名" required>
+          </div>
+          <div class="col-5">
+            <input class="form-control" type="number" name="remaining" placeholder="剩余" required>
+          </div>
+          <div class="col-12">
+            <button class="btn btn-outline-primary w-100">更新库存</button>
+          </div>
+        </form>
+        <hr>
+        <div class="small text-muted mb-2">当前库存</div>
+        <ul class="list-group">
+          {% for i in inventory %}
+          <li class="list-group-item d-flex justify-content-between">
+            <span>{{ i.name }}</span><span>{{ i.remaining }}</span>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted">暂无</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="h6">关键指标摘录</div>
+        <form method="post" action="/medical/lab-metric" class="row g-2">
+          <div class="col-6">
+            <label class="form-label small">日期</label>
+            <input class="form-control" type="date" name="metric_date" value="{{ today }}" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label small">指标名</label>
+            <input class="form-control" name="name" placeholder="HbA1c/甘油三酯..." required>
+          </div>
+          <div class="col-6">
+            <label class="form-label small">数值</label>
+            <input class="form-control" type="number" step="0.01" name="value" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label small">单位</label>
+            <input class="form-control" name="unit" placeholder="% / mmol/L ...">
+          </div>
+          <div class="col-12">
+            <button class="btn btn-outline-primary w-100">保存</button>
+          </div>
+        </form>
+        <hr>
+        <div class="small text-muted mb-2">最近指标</div>
+        <div class="list-group">
+          {% for x in lab_metrics %}
+          <div class="list-group-item d-flex justify-content-between">
+            <div>{{ x.metric_date.isoformat() }} {{ x.name }}</div>
+            <div>{{ x.value }}{% if x.unit %} {{ x.unit }}{% endif %}</div>
+          </div>
+          {% else %}
+          <div class="list-group-item text-muted">暂无</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="h6">体检报告归档（一期：存文件）</div>
+        <form method="post" action="/medical/report" enctype="multipart/form-data" class="row g-2">
+          <div class="col-6">
+            <label class="form-label small">报告日期（可选）</label>
+            <input class="form-control" type="date" name="report_date">
+          </div>
+          <div class="col-6">
+            <label class="form-label small">文件（图片/PDF）</label>
+            <input class="form-control" type="file" name="file" accept="image/*,application/pdf">
+          </div>
+          <div class="col-12">
+            <textarea class="form-control" name="notes" rows="2" placeholder="备注（可选）"></textarea>
+          </div>
+          <div class="col-12">
+            <button class="btn btn-outline-primary w-100">上传</button>
+          </div>
+        </form>
+        <hr>
+        <div class="small text-muted mb-2">最近报告</div>
+        <div class="list-group">
+          {% for r in reports %}
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between">
+              <div>报告日期：{{ r.report_date.isoformat() if r.report_date else "未填" }}</div>
+              <div class="small text-muted">{{ r.created_at.strftime("%Y-%m-%d %H:%M") }}</div>
+            </div>
+            {% if r.image_path %}
+            <div class="mt-1"><a href="/uploads/{{ r.image_path }}" target="_blank">查看文件</a></div>
+            {% endif %}
+            {% if r.notes %}<div class="small text-muted mt-1">{{ r.notes }}</div>{% endif %}
+          </div>
+          {% else %}
+          <div class="list-group-item text-muted">暂无</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
